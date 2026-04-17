@@ -13,6 +13,14 @@ module tb_tpu_desc_fetch_dma_stub;
     localparam [31:0] TILE_INPUT_BASE_ADDR  = 32'h6001_3100;
     localparam [31:0] TILE_OUTPUT_BASE_ADDR = 32'h6001_3400;
     localparam [31:0] TILE_PARAM_BASE_ADDR  = 32'h6000_4800;
+    localparam [31:0] WIDE_TILE_DESC_BASE_ADDR   = 32'h6001_5000;
+    localparam [31:0] WIDE_TILE_INPUT_BASE_ADDR  = 32'h6001_5100;
+    localparam [31:0] WIDE_TILE_OUTPUT_BASE_ADDR = 32'h6001_5400;
+    localparam [31:0] WIDE_TILE_PARAM_BASE_ADDR  = 32'h6000_5800;
+    localparam [31:0] LINEAR_DESC_BASE_ADDR   = 32'h6001_7000;
+    localparam [31:0] LINEAR_INPUT_BASE_ADDR  = 32'h6001_7100;
+    localparam [31:0] LINEAR_OUTPUT_BASE_ADDR = 32'h6001_7400;
+    localparam [31:0] LINEAR_PARAM_BASE_ADDR  = 32'h6000_7000;
 
     reg clk;
     reg rst_n;
@@ -95,6 +103,8 @@ module tb_tpu_desc_fetch_dma_stub;
     wire        tpu_axi_wready;
 
     integer output_index;
+    reg [15:0] expected_even_q8;
+    reg [15:0] expected_odd_q8;
     reg [31:0] expected_output_word;
     reg cpu_bg_write_overlap_seen;
     reg cpu_bg_writer_done;
@@ -415,12 +425,15 @@ module tb_tpu_desc_fetch_dma_stub;
         dut_mem.axi_ram_u.mem[((TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 6] = 32'd2;
         dut_mem.axi_ram_u.mem[((TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 7] = 32'h0001_0000;
 
-        // Q8.8: x=[1.0,2.0], y0=1*3+2*4+0.25=11.25, y1=1*(-1)+2*0.5-0.5=-0.5
+        // Q8.8 tile0: x=[1.0,2.0], y0=1*3+2*4+0.25=11.25, y1=1*(-1)+2*0.5-0.5=-0.5
+        // Q8.8 tile1: y2=1*0.25+2*0.75=1.75, y3=1*(-2)+2*1+0.125=0.125
         dut_mem.axi_ram_u.mem[((TILE_INPUT_BASE_ADDR  & 32'h007f_ffff) >> 2) + 0] = 32'h0200_0100;
         dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 0] = 32'h0400_0300;
         dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 1] = 32'h0080_FF00;
         dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 2] = 32'hFF80_0040;
-        dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 3] = 32'h0000_0000;
+        dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 3] = 32'h00C0_0040;
+        dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 4] = 32'h0100_FE00;
+        dut_mem.axi_ram_u.mem[((TILE_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 5] = 32'h0020_0000;
         dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 0] = 32'hDEAD_BEEF;
         dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1] = 32'hDEAD_BEEF;
 
@@ -434,10 +447,92 @@ module tb_tpu_desc_fetch_dma_stub;
             $display("[TB][DBG] tile output0 actual=0x%08x expected=0xFF800B40", dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 0]);
             tb_fail("2x2 MAC tile output word0 mismatch");
         end
-        if(dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1] !== 32'h0000_0000) begin
+        if(dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1] !== 32'h0020_01C0) begin
+            $display("[TB][DBG] tile output1 actual=0x%08x expected=0x002001C0", dut_mem.axi_ram_u.mem[((TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1]);
             tb_fail("2x2 MAC tile output word1 mismatch");
         end
-        $display("[TB] q8.8 2x2 MAC tile output matched expected packed result");
+        $display("[TB] q8.8 multi-tile 2x2 MAC outputs matched expected packed results");
+
+        $display("[TB] preload q8.8 2-to-32 tile descriptor/input/param directly into shared SRAM model");
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 0] = 32'h0000_0000;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 1] = WIDE_TILE_INPUT_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 2] = WIDE_TILE_OUTPUT_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 3] = WIDE_TILE_PARAM_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 4] = 32'h6001_5800;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 5] = 32'd1;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 6] = 32'd16;
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 7] = 32'h0001_0000;
+
+        dut_mem.axi_ram_u.mem[((WIDE_TILE_INPUT_BASE_ADDR  & 32'h007f_ffff) >> 2) + 0] = 32'h0200_0100;
+        for(output_index = 0; output_index < 16; output_index = output_index + 1) begin
+            expected_even_q8 = (output_index + 1) << 8;
+            dut_mem.axi_ram_u.mem[((WIDE_TILE_PARAM_BASE_ADDR & 32'h007f_ffff) >> 2) + (output_index * 3) + 0] = {16'h0000, expected_even_q8};
+            dut_mem.axi_ram_u.mem[((WIDE_TILE_PARAM_BASE_ADDR & 32'h007f_ffff) >> 2) + (output_index * 3) + 1] = {expected_even_q8, 16'h0000};
+            dut_mem.axi_ram_u.mem[((WIDE_TILE_PARAM_BASE_ADDR & 32'h007f_ffff) >> 2) + (output_index * 3) + 2] = 32'h0000_0000;
+            dut_mem.axi_ram_u.mem[((WIDE_TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + output_index] = 32'hDEAD_BEEF;
+        end
+
+        pulse_launch(WIDE_TILE_DESC_BASE_ADDR);
+        wait(dma_status_busy);
+        wait(dma_status_done);
+        if(dma_status_error) begin
+            tb_fail("2-to-32 MAC tile DMA reported error");
+        end
+        if(param_fetch_word_count_reg !== 32'd48) tb_fail("2-to-32 tile param_fetch_word_count mismatch");
+        for(output_index = 0; output_index < 16; output_index = output_index + 1) begin
+            expected_even_q8 = (output_index + 1) << 8;
+            expected_odd_q8  = (output_index + 1) << 9;
+            expected_output_word = {expected_odd_q8, expected_even_q8};
+            if(dut_mem.axi_ram_u.mem[((WIDE_TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + output_index] !== expected_output_word) begin
+                $display("[TB][DBG] 2-to-32 output[%0d] actual=0x%08x expected=0x%08x", output_index, dut_mem.axi_ram_u.mem[((WIDE_TILE_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + output_index], expected_output_word);
+                tb_fail("2-to-32 MAC tile output mismatch");
+            end
+        end
+        $display("[TB] q8.8 2-to-32 tiled MAC outputs matched expected packed results");
+
+        $display("[TB] preload q8.8 multi-input linear descriptor/input/param directly into shared SRAM model");
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 0] = 32'h0000_0000;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 1] = LINEAR_INPUT_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 2] = LINEAR_OUTPUT_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 3] = LINEAR_PARAM_BASE_ADDR;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 4] = 32'h6001_7800;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 5] = 32'd2;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 6] = 32'd2;
+        dut_mem.axi_ram_u.mem[((LINEAR_DESC_BASE_ADDR   & 32'h007f_ffff) >> 2) + 7] = 32'h0001_0000;
+
+        // input lanes are [1.0, 2.0, 3.0, 4.0].  Each output word emits two Q8.8 lanes.
+        dut_mem.axi_ram_u.mem[((LINEAR_INPUT_BASE_ADDR  & 32'h007f_ffff) >> 2) + 0] = 32'h0200_0100;
+        dut_mem.axi_ram_u.mem[((LINEAR_INPUT_BASE_ADDR  & 32'h007f_ffff) >> 2) + 1] = 32'h0400_0300;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 0] = 32'h0200_0100;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 1] = 32'h0080_FF00;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 2] = 32'h0400_0300;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 3] = 32'h0100_0000;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 4] = 32'h0000_0000;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 5] = 32'h0040_0040;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 6] = 32'h0000_0200;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 7] = 32'h0040_0040;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 8] = 32'h0080_FF00;
+        dut_mem.axi_ram_u.mem[((LINEAR_PARAM_BASE_ADDR  & 32'h007f_ffff) >> 2) + 9] = 32'h0000_0000;
+        dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 0] = 32'hDEAD_BEEF;
+        dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1] = 32'hDEAD_BEEF;
+
+        pulse_launch(LINEAR_DESC_BASE_ADDR);
+        wait(dma_status_busy);
+        wait(dma_status_done);
+        if(dma_status_error) begin
+            tb_fail("multi-input linear DMA reported error");
+        end
+        if(input_fetch_word_count_reg !== 32'd2) tb_fail("multi-input linear input_fetch_word_count mismatch");
+        if(param_fetch_word_count_reg !== 32'd10) tb_fail("multi-input linear param_fetch_word_count mismatch");
+        if(dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 0] !== 32'h0400_1E00) begin
+            $display("[TB][DBG] linear output0 actual=0x%08x expected=0x04001E00", dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 0]);
+            tb_fail("multi-input linear output word0 mismatch");
+        end
+        if(dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1] !== 32'h0100_0280) begin
+            $display("[TB][DBG] linear output1 actual=0x%08x expected=0x01000280", dut_mem.axi_ram_u.mem[((LINEAR_OUTPUT_BASE_ADDR & 32'h007f_ffff) >> 2) + 1]);
+            tb_fail("multi-input linear output word1 mismatch");
+        end
+        $display("[TB] q8.8 multi-input packed linear outputs matched expected packed results");
 
         pulse_launch(32'd0);
         repeat(2) @(posedge clk);

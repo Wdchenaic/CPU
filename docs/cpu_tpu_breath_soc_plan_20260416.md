@@ -96,6 +96,7 @@
 这意味着：
 
 - 对 `纯 MLP/Linear` 子图，当前 TPU 适合继续扩成 tile 执行。
+- 当前 Stage2 RTL 和 CPU 软件 demo 已验证 `flags[16]` 的 multi-tile 2x2 Q8.8 MAC，并通过 `output_words=16 / param_words=48` 跑通 `2 -> 32` 第一层雏形。
 - 对 `1D CNN` 分支，当前 TPU 不适合直接承接，除非后续做较大规模硬件重构。
 
 ## 4. 当前阶段的 CPU/TPU 最优切分
@@ -230,6 +231,8 @@ typedef struct {
 - 分类头
 - 后续可能加入的简化卷积块
 
+当前 RTL 已落地一个受控的 tile 特例：`flags[16] = TPU_DESC_F_TILE2X2_Q8_8` 时，DMA 不再按固定表抓参数，而是按 `output_words * 3` 抓参数；每个 output word 是两个 Q8.8 输出 lane。
+
 它的边界是：
 
 - 还不是图执行 runtime
@@ -354,7 +357,7 @@ CSV
 - 不做大而全通用 graph runtime
 - 不先追求 custom instruction 全栈闭环
 - 不先做 DDR
-- 不先做复杂 cache coherency 系统
+- 不先做复杂 cache coherency 系统；当前 shared SRAM 段先通过 `ext_mem_uncached="true"` 做成 uncached 区
 
 ## 12. 当前阶段最该推进的内容
 
@@ -411,3 +414,4 @@ CSV
   - `CPU` 跑滑窗、特征提取、CNN 分支和调度
   - `TPU` 跑关键特征 MLP、辅助特征 MLP、分类头
   - 靠 `descriptor + DMA + shared SRAM + 多次调用 + 双缓冲` 做成真实异构 SoC
+- 当前已验证到 CPU 可通过 C 程序发起 `2 -> 32` 第一层 tile 子任务；下一步是 layer schedule / scratch / ReLU，把它推进成多层 MLP 子网。

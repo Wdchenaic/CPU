@@ -72,6 +72,8 @@ static const tpu_net_meta_t g_tpu_net_meta[] = {
 - 这里 `input_words/output_words` 默认按 `32bit word` 计数。
 - 因为 TPU 当前内部主数据是 `Q8.8 / 16-bit`，建议两个 16-bit 数据打成一个 32-bit word。
 - `TBD` 的 `param_words` 后面根据离线导出的量化权重精确填。
+- 当前 RTL 已支持 `TPU_DESC_F_TILE2X2_Q8_8` 的特殊第一层 tile 模式：`param_words = output_words * 3`。例如 `2 -> 32` 第一层可用 `input_words=1 / output_words=16 / param_words=48` 表示。
+- 完整多层 MLP 还没有自动 layer graph，后续需要 layer schedule、scratch 中间结果和 ReLU/后处理。
 
 ## 4. 输入输出打包建议
 
@@ -190,10 +192,12 @@ typedef struct {
 
 - 第一版不要把 flags 做太花。
 - 先给少量控制位，足够调试和双缓冲就行。
+- `TPU_DESC_F_TILE2X2_Q8_8` 当前已经在 RTL 中落地：每个 output word 生成两个 Q8.8 lane，每个 output word 对应 3 个 param word。
+- 对 `2 -> 32` 这类第一层 MLP，descriptor 只需要写 `output_words=16`，DMA 会自动抓 `48` 个参数。
 
 ## 8. CPU 软件文件规划
 
-建议新增这些文件，但当前先不写代码：
+这些文件当前已经有最小骨架，后续继续扩展：
 
 ### 8.1 头文件
 
@@ -218,6 +222,8 @@ typedef struct {
   - `tpu_submit_desc()`
   - `tpu_wait_done()`
   - `tpu_run_net()`
+  - 当前已能编译成 `breath_tpu_soc_demo` 并通过 CPU boot 顶层仿真发起 3 次 TPU launch
+  - `NET_ID_MLP_KEY` 已接入 `TILE2X2_Q8_8` 软件用例，第一阶段 CPU launch 会驱动 `2 -> 32` tile 计算
 
 - `software/lib/tpu_pack.c`
   - 特征和向量打包工具
@@ -329,17 +335,17 @@ int breath_run_window(const int16_t *raw_1000,
 
 ### 12.1 cache/coherency
 
-当前这颗 CPU 里：
+当前第一版已经采用 shared SRAM uncached bypass：
 
-- `EN_DCACHE=false` 会直接把 `m_axi_dcache_*` tie-off
-- 所以不能简单靠关 DCache 解决 shared SRAM 一致性
+- `panda_soc_stage2_base_top.v` 里把 `0x6000_0000` shared SRAM 段接成 `ext_mem_uncached="true"`。
+- CPU 访问 shared SRAM 时不走 DCache 数据阵列，而是通过单拍 ICB/AXI 旁路进入 shared SRAM。
+- 这比简单把 `EN_DCACHE=false` 更稳，因为 `EN_DCACHE=false` 会把原来的 `m_axi_dcache_*` 外存路径 tie-off。
 
-因此后续要在实现时二选一：
+当前边界：
 
-1. 给 shared SRAM 地址段补 `uncached bypass`
-2. 或设计受控的 cache maintenance 策略
-
-当前更推荐的长期方案是第 1 种，但这一步还没开始落 RTL。
+- 第一版不做复杂 cache maintenance。
+- shared SRAM 段按硬件约定为 uncached 区。
+- 如果以后把 TPU DMA 指向普通可缓存内存，再需要 cache flush/invalidate 或一致性协议。
 
 ### 12.2 分类头输入很大
 
@@ -355,10 +361,9 @@ int breath_run_window(const int16_t *raw_1000,
 
 如果下一步开始写代码，优先顺序建议是：
 
-1. `software/include/tpu_desc.h`
-2. `software/include/tpu_regs.h`
-3. `software/include/tpu_runtime.h`
-4. `software/lib/tpu_runtime.c`
-5. `software/test/breath_tpu_soc_demo/main.c`
+1. `NET_ID=0` 的 layer schedule：把当前已验证的 `2 -> 32` 第一层结果写入 scratch，再继续跑 `32 -> 64`。
+2. 补 ReLU/激活或等效后处理，使多层 MLP 结果不只是线性 tile 输出。
+3. 把 `TILE2X2_Q8_8` 的参数打包工具从手写常量推进到离线导出脚本。
+4. 后续再把 tile 内部替换成真实 TinyTPU systolic/PE 接口。
 
-这批文件先把 CPU 侧 runtime 壳立起来，再往下接 SoC 数据面和 RTL。
+CPU 侧 runtime 壳、descriptor 头文件、demo 目录和 `NET_ID=0` 的 `2 -> 32` 软件用例已经存在，下一步重点是多层调度和参数导出。

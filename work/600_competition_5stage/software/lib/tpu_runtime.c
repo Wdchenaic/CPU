@@ -21,7 +21,14 @@ static const TPUNetMeta g_tpu_net_meta[] = {
 };
 
 static const uint32_t g_param_blob_mlp_key[TPU_PARAM_POOL_MLP_KEY_WORDS] = {
-    1u, 2u, 3u, 4u
+    0x00000100u, 0x01000000u, 0x00000000u, 0x00000200u, 0x02000000u, 0x00000000u,
+    0x00000300u, 0x03000000u, 0x00000000u, 0x00000400u, 0x04000000u, 0x00000000u,
+    0x00000500u, 0x05000000u, 0x00000000u, 0x00000600u, 0x06000000u, 0x00000000u,
+    0x00000700u, 0x07000000u, 0x00000000u, 0x00000800u, 0x08000000u, 0x00000000u,
+    0x00000900u, 0x09000000u, 0x00000000u, 0x00000A00u, 0x0A000000u, 0x00000000u,
+    0x00000B00u, 0x0B000000u, 0x00000000u, 0x00000C00u, 0x0C000000u, 0x00000000u,
+    0x00000D00u, 0x0D000000u, 0x00000000u, 0x00000E00u, 0x0E000000u, 0x00000000u,
+    0x00000F00u, 0x0F000000u, 0x00000000u, 0x00001000u, 0x10000000u, 0x00000000u
 };
 
 static const uint32_t g_param_blob_mlp_other[TPU_PARAM_POOL_MLP_OTHER_WORDS] = {
@@ -271,7 +278,7 @@ void tpu_prepare_demo_input(TPURuntime* runtime, uint32_t net_id){
 
     switch(net_id){
         case NET_ID_MLP_KEY:
-            shared_word_ptr(runtime->active_input_addr)[0] = 0x00100020u;
+            shared_word_ptr(runtime->active_input_addr)[0] = 0x02000100u;
             break;
         case NET_ID_MLP_OTHER:
             shared_word_ptr(runtime->active_input_addr)[0] = 0x00010002u;

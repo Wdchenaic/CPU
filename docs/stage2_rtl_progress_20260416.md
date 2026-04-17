@@ -107,7 +107,7 @@ launch + desc_base
   -> TPU DMA stub 发起 AXI 读
   -> 从 shared SRAM 抓 8-word descriptor
   -> 按 descriptor 抓 input blob
-  -> 按 net_id 固定表抓 param blob
+  -> 默认按 net_id 固定表抓 param blob；flags[16] tile 模式按 output_words*3 抓 param blob
   -> 以 word_valid 流式喂给 tpu_mlp_compute_stub
   -> 由 compute stub 生成 output word
   -> DMA 写回 output blob
@@ -118,12 +118,12 @@ launch + desc_base
 
 - 先抓取 8-word descriptor
 - 再按 descriptor 的 `input_addr/input_words` 抓 input blob
-- 再按 `net_id` 对应固定表抓 param blob
+- 再按 `net_id` 对应固定表抓 param blob；如果 `flags[16]` 进入 `TILE2X2_Q8_8` 模式，则按 `output_words * 3` 动态抓参数
 - input/param fetch 结果通过 `input_word_valid/input_word` 和 `param_word_valid/param_word` 流式送进 `tpu_mlp_compute_stub`
 - 最后按 `output_addr/output_words` 把 compute stub 的最小结果写回 output blob
 - 当前 output 已有两种模式：
   - 默认兼容模式：`output_word[i] = input_checksum + param_checksum + net_id + flags + i`
-  - `flags[16]` tile 模式：执行 2x2 Q8.8 MAC，输入/权重/偏置按两个 16-bit lane 打包，`output_word[0] = {y1, y0}`
+  - `flags[16]` tile 模式：执行 multi-tile 2x2 Q8.8 MAC，输入/权重/偏置按两个 16-bit lane 打包；每个 output word 对应一个 2-output tile，参数消耗 3 word，`param_words = output_words * 3`
 - 仍保留输入侧最小统计寄存器，但这些调试值已经由 compute stub 侧维护：
   - `input_fetch_word_count`
   - `input_checksum`
@@ -214,7 +214,8 @@ shared SRAM model
 - 校验 input fetch 的 `count/checksum/last_word`
 - 校验 param fetch 的 `count/checksum/last_word`
 - 校验 output blob 被按预期模式写回
-- 新增校验 `flags[16]` 的 2x2 Q8.8 MAC tile：`x=[1.0,2.0]` 输出 `0xFF80_0B40`
+- 新增校验 `flags[16]` 的 multi-tile 2x2 Q8.8 MAC：`x=[1.0,2.0]` 时输出 `0xFF80_0B40` 和 `0x0020_01C0`
+- 新增 `2 -> 32` 第一层形态 directed test：`output_words=16`，DMA 自动拉取 `48` 个参数并写回 16 个 packed output word
 - 校验 CPU 背景 AXI write 也能在 DMA busy 期间完成
 - `soft_reset` 后状态清零
 - `desc_base = 0` 时 `error` 路径正确
@@ -300,7 +301,8 @@ AXI-Lite master model
    - 实际仿真输出：
      - `DMA busy asserted`
      - `descriptor/input/param fetched, output written back, and cpu background writes completed through shared SRAM`
-     - `q8.8 2x2 MAC tile output matched expected packed result`
+     - `q8.8 multi-tile 2x2 MAC outputs matched expected packed results`
+     - `q8.8 2-to-32 tiled MAC outputs matched expected packed results`
      - `descriptor/input/param/output DMA stub test with cpu background traffic passed`
 
 5. `tb_tpu_ctrl_dma_integration.sv` 已通过 `VCS` 编译 + 运行
@@ -316,13 +318,17 @@ AXI-Lite master model
      - `panda_risc_v_min_proc_sys` 新增 `ext_mem_uncached` 旁路模式，`0x6000_0000` shared SRAM 可绕过 DCache 以单拍 AXI 直达
    - 实际仿真输出：
      - `observed launch #1/#2/#3`
+     - launch #1 已由 CPU 软件以 `flags=0x00010001` 触发 `NET_ID=0` 的 `TILE2X2_Q8_8` 模式
      - launch 时 `desc/input/param` 在 shared SRAM 中均为非零且内容正确
      - `cpu boot launched all three stages and shared SRAM contents match expectations`
      - `CPU top-level stage2 boot test passed`
+   - 2026-04-17 已在软件重编译与 IMEM 重新生成后再次通过该 CPU boot 顶层仿真
+   - CPU boot TB 已检查 stage0 `2 -> 32` tile 输出：`out0[0]=0x02000100`、`out0[15]=0x20001000`
 
 7. `tpu_mlp_compute_stub.v` 已接入 DMA 写回路径
    - 默认路径仍保留 checksum-compatible placeholder，保证现有 CPU boot demo 不变
-   - `flags[16]` 已启用 2x2 Q8.8 MAC tile 模式，完成从 input/param 到 packed output 的真实乘加
+   - `flags[16]` 已启用 multi-tile 2x2 Q8.8 MAC tile 模式，完成从 input/param 到 packed output 的真实乘加
+   - tile 模式参数长度由 descriptor 的 `output_words` 推导：每个 output word 消耗 3 个 param word，因此 `2 -> 32` 第一层形态为 `output_words=16 / param_words=48`
    - 当前已经形成流式 input/param 边界：DMA 读到每个 input/param word 后，用 `*_word_valid` 喂给 compute block
    - `input_fetch_word_count/input_checksum/input_last_word` 与 `param_fetch_word_count/param_checksum/param_last_word` 已由 compute block 侧维护
    - 改动目标是把 `DMA 数据搬运` 和 `compute 结果生成` 拆开，后续可把 tile 内部替换成真实 TinyTPU systolic/PE 或扩成多 tile MLP datapath
@@ -376,7 +382,7 @@ cd work/600_competition_5stage/fpga/panda_soc_eva/tb
 
 ## 下一步最值钱的工作
 
-1. 把当前 `flags[16]` 的 2x2 Q8.8 MAC tile 扩成多 tile/layer 调度，先覆盖 `NET_ID=0` 的关键特征 MLP
+1. 在 `NET_ID=0` 上补 layer schedule / scratch / ReLU，把已接入 CPU demo 的 `2 -> 32` 第一层推进到多层关键特征 MLP
 2. 把 DMA 原型的 input/param fetch 结果转成 TinyTPU 可消费的 UB/load 接口
 3. 后续再把 tile 内部替换为真实 TinyTPU systolic/PE，扩到 `NET_ID=1/2`
 4. `tb_panda_soc_stage2_smoke.sv` 可后补，当前优先级低于真实 compute datapath 替换

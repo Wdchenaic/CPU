@@ -33,8 +33,8 @@ TPU descriptor / fixed-table 定义(接口头文件)
 #define TPU_PARAM_POOL_CLASSIFIER_BASE     0x60004000u
 #define TPU_PARAM_POOL_CNN1D_RSVD_BASE     0x60008000u
 
-// 当前 DMA stub 使用的最小参数字数
-#define TPU_PARAM_POOL_MLP_KEY_WORDS       4u
+// 当前 demo / DMA stub 使用的参数字数
+#define TPU_PARAM_POOL_MLP_KEY_WORDS       48u
 #define TPU_PARAM_POOL_MLP_OTHER_WORDS     6u
 #define TPU_PARAM_POOL_CLASSIFIER_WORDS    8u
 #define TPU_PARAM_POOL_CNN1D_RSVD_WORDS    0u

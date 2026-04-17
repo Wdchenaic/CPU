@@ -9,7 +9,8 @@ module tb_panda_soc_stage2_cpu_boot;
     localparam [31:0] TPU_OUT_BUF0_BASE = 32'h6001_0400;
     localparam [31:0] TPU_OUT_BUF1_BASE = 32'h6001_1400;
 
-    localparam [31:0] EXPECT_STAGE0_SEED = 32'h0010_002B;
+    localparam [31:0] EXPECT_STAGE0_OUT0  = 32'h0200_0100;
+    localparam [31:0] EXPECT_STAGE0_OUT15 = 32'h2000_1000;
     localparam [31:0] EXPECT_STAGE1_SEED = 32'h0009_00F7;
     localparam [31:0] EXPECT_STAGE2_SEED = 32'h0000_D69A;
 
@@ -288,6 +289,8 @@ module tb_panda_soc_stage2_cpu_boot;
 
         expect_launch(1, 32'd0, TPU_DESC0_BASE);
         expect_launch(2, 32'd1, TPU_DESC1_BASE);
+        expect_word(OUT0_WORD_INDEX + 0,  EXPECT_STAGE0_OUT0,  "stage0 tile output[0] mismatch");
+        expect_word(OUT0_WORD_INDEX + 15, EXPECT_STAGE0_OUT15, "stage0 tile output[15] mismatch");
         expect_launch(3, 32'd2, TPU_DESC0_BASE);
 
         for(wait_cycles = 0; wait_cycles < 200000; wait_cycles = wait_cycles + 1) begin
@@ -308,8 +311,9 @@ module tb_panda_soc_stage2_cpu_boot;
             tb_fail("final done was not observed after third launch");
         end
 
-        expect_word(PARAM_KEY_INDEX + 0, 32'd1,   "param_pool key[0] mismatch");
-        expect_word(PARAM_KEY_INDEX + 1, 32'd2,   "param_pool key[1] mismatch");
+        expect_word(PARAM_KEY_INDEX + 0, 32'h0000_0100, "param_pool key[0] mismatch");
+        expect_word(PARAM_KEY_INDEX + 1, 32'h0100_0000, "param_pool key[1] mismatch");
+        expect_word(PARAM_KEY_INDEX + 47, 32'h0000_0000, "param_pool key[47] mismatch");
         expect_word(PARAM_OTHER_INDEX + 0, 32'd11, "param_pool other[0] mismatch");
         expect_word(PARAM_OTHER_INDEX + 5, 32'd66, "param_pool other[5] mismatch");
         expect_word(PARAM_CLASSIFIER_INDEX + 0, 32'd101, "param_pool classifier[0] mismatch");

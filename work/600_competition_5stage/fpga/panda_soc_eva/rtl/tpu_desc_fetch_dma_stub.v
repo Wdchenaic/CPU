@@ -91,6 +91,8 @@ module tpu_desc_fetch_dma_stub #(
         PHASE_PARAM  = 2'd2,
         PHASE_OUTPUT = 2'd3;
 
+    localparam integer TPU_DESC_F_TILE2X2_Q8_8_BIT = 16;
+
     reg [2:0]  state_reg;
     reg [1:0]  phase_reg;
     reg [31:0] desc_base_reg;
@@ -122,6 +124,7 @@ module tpu_desc_fetch_dma_stub #(
         .clear_pulse(compute_clear_req),
         .net_id(desc_net_id_reg),
         .flags(desc_flags_reg),
+        .input_words(desc_input_words_reg),
         .input_word_valid(compute_input_word_valid),
         .input_word(m_axi_rdata),
         .param_word_valid(compute_param_word_valid),
@@ -146,6 +149,20 @@ module tpu_desc_fetch_dma_stub #(
                 32'd3: param_words_for_net = NET3_PARAM_WORDS;
                 default: param_words_for_net = 32'd0;
             endcase
+        end
+    endfunction
+
+    function [31:0] param_words_for_task;
+        input [31:0] net_id;
+        input [31:0] flags;
+        input [31:0] input_words;
+        input [31:0] output_words;
+        begin
+            if(flags[TPU_DESC_F_TILE2X2_Q8_8_BIT]) begin
+                param_words_for_task = output_words * ((input_words << 1) + 32'd1);
+            end else begin
+                param_words_for_task = param_words_for_net(net_id);
+            end
         end
     endfunction
 
@@ -318,11 +335,11 @@ module tpu_desc_fetch_dma_stub #(
                                     endcase
 
                                     if(word_idx_reg + 32'd1 >= phase_total_words_reg) begin
-                                        param_words_target_reg <= param_words_for_net(desc_net_id_reg);
+                                        param_words_target_reg <= param_words_for_task(desc_net_id_reg, m_axi_rdata, desc_input_words_reg, desc_output_words_reg);
                                         if(desc_input_words_reg != 32'd0) begin
                                             start_read_phase(PHASE_INPUT, desc_input_addr_reg, desc_input_words_reg);
-                                        end else if(param_words_for_net(desc_net_id_reg) != 32'd0) begin
-                                            start_read_phase(PHASE_PARAM, desc_param_addr_reg, param_words_for_net(desc_net_id_reg));
+                                        end else if(param_words_for_task(desc_net_id_reg, m_axi_rdata, desc_input_words_reg, desc_output_words_reg) != 32'd0) begin
+                                            start_read_phase(PHASE_PARAM, desc_param_addr_reg, param_words_for_task(desc_net_id_reg, m_axi_rdata, desc_input_words_reg, desc_output_words_reg));
                                         end else if(desc_output_words_reg != 32'd0) begin
                                             start_output_phase(desc_output_addr_reg, desc_output_words_reg);
                                         end else begin

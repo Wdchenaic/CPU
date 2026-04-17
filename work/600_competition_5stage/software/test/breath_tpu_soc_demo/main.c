@@ -94,7 +94,7 @@ int main(){
         TPU_PARAM_POOL_MLP_OTHER_BASE,
         TPU_PARAM_POOL_CLASSIFIER_BASE);
 
-    run_demo_stage(NET_ID_MLP_KEY, 0u, TPU_DESC_F_RELU, "MLP_KEY");
+    run_demo_stage(NET_ID_MLP_KEY, 0u, TPU_DESC_F_RELU | TPU_DESC_F_TILE2X2_Q8_8, "MLP_KEY");
     run_demo_stage(NET_ID_MLP_OTHER, 1u, TPU_DESC_F_RELU | TPU_DESC_F_BUFSEL, "MLP_OTHER");
     run_demo_stage(NET_ID_CLASSIFIER, 0u, TPU_DESC_F_LAST_STAGE, "CLASSIFIER");
 

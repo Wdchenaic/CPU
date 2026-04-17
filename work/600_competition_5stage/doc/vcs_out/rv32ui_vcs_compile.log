@@ -1,0 +1,192 @@
+Command: vcs -full64 -sverilog -f /home/jjt/soc/my_soc/CPU_Copetition_tpu_soc/work/600_competition_5stage/doc/competition_5stage_vcs.f \
+-top tb_panda_risc_v -l /home/jjt/soc/my_soc/CPU_Copetition_tpu_soc/work/600_competition_5stage/doc/vcs_out/rv32ui_vcs_compile.log \
+-o /tmp/competition_vcs_rv32ui/simv_rv32ui
+                         Chronologic VCS (TM)
+         Version T-2022.06_Full64 -- Fri Apr 17 12:19:32 2026
+
+                    Copyright (c) 1991 - 2022 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/dcache_ctrl.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/dcache_nxt_lv_mem_icb.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/dcache_nxt_lv_mem_icb_to_axi.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/dcache_way_access_hot_record.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/dcache_wbuffer.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/icb_dcache.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/cache/logic_dcache_way_mem.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/debug/apb_clock_convert.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/debug/jtag_dm.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/debug/jtag_dtm.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/debug/jtag_dtm_core.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_data_dpc_monitor.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_dcd_dsptc.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_decoder.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_dispatch_msg_gen.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_dispatcher.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_id_ex_pipe.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/decoder_dispatcher/panda_risc_v_reg_file_rd.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_alu.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_commit.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_csr_rw.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_divider.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_ex_mem_pipe.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_exu.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_lsu.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_multiplier.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_reg_file.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_reg_file_rd_arb.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_wb_pipe.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_wbk.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/axis_reg_slice.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/axis_reg_slice_core.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/fifo_based_on_regs.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/mul_add_dsp.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/round_robin_arbitrator.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/generic/single_bit_syn.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_ibus_ctrler.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_if_id_pipe.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_ifu.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_imem_access_ctrler.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_jalr_baseaddr_rd.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_pc_gen.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/ifu/panda_risc_v_pre_decoder.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/panda_risc_v.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/peripherals/icb_sram_ctrler.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/system/panda_risc_v_biu.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/system/panda_risc_v_reset.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/tb/tb_panda_risc_v/to_compile/dut/bram_single_port.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/tb/tb_panda_risc_v/to_compile/dut/panda_risc_v_sim.v'
+Parsing design file '/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/tb/tb_panda_risc_v/to_compile/tb/tb_panda_risc_v.sv'
+Top Level Modules:
+       tb_panda_risc_v
+TimeScale is 1 ns / 1 ps
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/system/panda_risc_v_biu.v, 204
+panda_risc_v_biu, "round_robin_arbitrator #(.chn_n(2), .simulation_delay(simulation_delay)) round_robin_arbitrator_u( .clk (clk),  .rst_n (resetn),  .req ({ibus_req_from_inst, ibus_req_from_data}),  .grant ({ibus_grant_to_inst, ibus_grant_to_data}));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/system/panda_risc_v_biu.v, 232
+panda_risc_v_biu, "fifo_based_on_regs #(.fwft_mode("true"), .low_latency_mode("false"), .fifo_depth(4), .fifo_data_width(1), .almost_full_th(1), .almost_empty_th(1), .simulation_delay(simulation_delay)) dbus_addr_dcd_msg_fifo( .clk (clk),  .rst_n (resetn),  .fifo_wen (dbus_addr_dcd_msg_fifo_wen),  .fifo_din (dbus_addr_dcd_msg_fifo_din),  .fifo_full_n (dbus_addr_dcd_msg_fifo_full_n),  .fifo_ren (dbus_addr_dcd_msg_fifo_ren),  .fifo_dout (dbus_addr_dcd_msg_fifo_dout),  .fifo_empty_n (dbus_addr_dcd_msg_fifo_empty_n));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/system/panda_risc_v_biu.v, 265
+panda_risc_v_biu, "fifo_based_on_regs #(.fwft_mode("true"), .low_latency_mode("false"), .fifo_depth(4), .fifo_data_width(1), .almost_full_th(1), .almost_empty_th(1), .simulation_delay(simulation_delay)) imem_access_arb_msg_fifo( .clk (clk),  .rst_n (resetn),  .fifo_wen (imem_access_arb_msg_fifo_wen),  .fifo_din (imem_access_arb_msg_fifo_din),  .fifo_full_n (imem_access_arb_msg_fifo_full_n),  .fifo_ren (imem_access_arb_msg_fifo_ren),  .fifo_dout (imem_access_arb_msg_fifo_dout),  .fifo_empty_n (imem_access_arb_msg_fifo_empty_n));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_multiplier.v, 108
+panda_risc_v_multiplier, "fifo_based_on_regs #(.fwft_mode("true"), .low_latency_mode("true"), .fifo_depth(2), .fifo_data_width((72 + inst_id_width)), .almost_full_th(1), .almost_empty_th(0), .simulation_delay(simulation_delay)) mul_in_buf_fifo( .clk (clk),  .rst_n (resetn),  .fifo_wen (mul_in_buf_wen),  .fifo_din (mul_in_buf_din),  .fifo_full_n (mul_in_buf_full_n),  .fifo_ren (mul_in_buf_ren),  .fifo_dout (mul_in_buf_dout),  .fifo_empty_n (mul_in_buf_empty_n));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_divider.v, 107
+panda_risc_v_divider, "fifo_based_on_regs #(.fwft_mode("true"), .low_latency_mode("true"), .fifo_depth(2), .fifo_data_width((72 + inst_id_width)), .almost_full_th(1), .almost_empty_th(0), .simulation_delay(simulation_delay)) div_in_buf_fifo( .clk (clk),  .rst_n (resetn),  .fifo_wen (div_in_buf_wen),  .fifo_din (div_in_buf_din),  .fifo_full_n (div_in_buf_full_n),  .fifo_ren (div_in_buf_ren),  .fifo_dout (div_in_buf_dout),  .fifo_empty_n (div_in_buf_empty_n));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_wbk.v, 182
+panda_risc_v_wbk, "round_robin_arbitrator #(.chn_n(3), .simulation_delay(simulation_delay)) round_robin_arbitrator_u( .clk (clk),  .rst_n (resetn),  .req ({lsu_wbk_req, mul_wbk_req, div_wbk_req}),  .grant ({lsu_wbk_granted, mul_wbk_granted, div_wbk_granted}));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/exu/panda_risc_v_exu.v, 715
+panda_risc_v_exu, "fifo_based_on_regs #(.fwft_mode("true"), .low_latency_mode("false"), .fifo_depth(2), .fifo_data_width(33), .almost_full_th(1), .almost_empty_th(1), .simulation_delay(simulation_delay)) lsu_expt_fifo( .clk (clk),  .rst_n (sys_resetn),  .fifo_wen (lsu_expt_fifo_wen),  .fifo_din (lsu_expt_fifo_din),  .fifo_full_n (lsu_expt_fifo_full_n),  .fifo_ren (lsu_expt_fifo_ren),  .fifo_dout (lsu_expt_fifo_dout),  .fifo_empty_n (lsu_expt_fifo_empty_n));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/panda_risc_v.v, 165
+panda_risc_v, "axis_reg_slice #(.data_width(64), .user_width(5), .forward_registered(en_inst_cmd_fwd), .back_registered("false"), .en_ready("true"), .simulation_delay(simulation_delay)) axis_reg_slice_u0( .clk (clk),  .rst_n (sys_resetn),  .s_axis_data (s0_reg_slice_data),  .s_axis_user (s0_reg_slice_user),  .s_axis_valid (s0_reg_slice_valid),  .s_axis_ready (s0_reg_slice_ready),  .m_axis_data (m0_reg_slice_data),  .m_axis_user (m0_reg_slice_user),  .m_axis_valid (m0_reg_slice_valid),  .m_axis_ready (m0_reg_slice_ready));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/panda_risc_v.v, 204
+panda_risc_v, "axis_reg_slice #(.data_width(64), .user_width(5), .forward_registered(en_data_cmd_fwd), .back_registered("false"), .en_ready("true"), .simulation_delay(simulation_delay)) axis_reg_slice_u1( .clk (clk),  .rst_n (sys_resetn),  .s_axis_data (s1_reg_slice_data),  .s_axis_user (s1_reg_slice_user),  .s_axis_valid (s1_reg_slice_valid),  .s_axis_ready (s1_reg_slice_ready),  .m_axis_data (m1_reg_slice_data),  .m_axis_user (m1_reg_slice_user),  .m_axis_valid (m1_reg_slice_valid),  .m_axis_ready (m1_reg_slice_ready));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/panda_risc_v.v, 243
+panda_risc_v, "axis_reg_slice #(.data_width(32), .user_width(1), .forward_registered("false"), .back_registered(en_inst_rsp_bck), .en_ready("true"), .simulation_delay(simulation_delay)) axis_reg_slice_u2( .clk (clk),  .rst_n (sys_resetn),  .s_axis_data (s2_reg_slice_data),  .s_axis_user (s2_reg_slice_user),  .s_axis_valid (s2_reg_slice_valid),  .s_axis_ready (s2_reg_slice_ready),  .m_axis_data (m2_reg_slice_data),  .m_axis_user (m2_reg_slice_user),  .m_axis_valid (m2_reg_slice_valid),  .m_axis_ready (m2_reg_slice_ready));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+
+Warning-[TFIPC] Too few instance port connections
+/mnt/hgfs/wdchenaic/CPU_Copetition/work/600_competition_5stage/rtl/panda_risc_v.v, 282
+panda_risc_v, "axis_reg_slice #(.data_width(32), .user_width(1), .forward_registered("false"), .back_registered(en_data_rsp_bck), .en_ready("true"), .simulation_delay(simulation_delay)) axis_reg_slice_u3( .clk (clk),  .rst_n (sys_resetn),  .s_axis_data (s3_reg_slice_data),  .s_axis_user (s3_reg_slice_user),  .s_axis_valid (s3_reg_slice_valid),  .s_axis_ready (s3_reg_slice_ready),  .m_axis_data (m3_reg_slice_data),  .m_axis_user (m3_reg_slice_user),  .m_axis_valid (m3_reg_slice_valid),  .m_axis_ready (m3_reg_slice_ready));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+Starting vcs inline pass...
+
+10 modules and 0 UDP read.
+	However, due to incremental compilation, no re-compilation is necessary.
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+ld -shared  -Bsymbolic   -o .//../simv_rv32ui.daidir//_cuarc0.so objs/amcQw_d.o  \
+
+rm -f _cuarc0.so
+if [ -x /tmp/competition_vcs_rv32ui/simv_rv32ui ]; then chmod a-x /tmp/competition_vcs_rv32ui/simv_rv32ui; \
+fi
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+g++  -o /tmp/competition_vcs_rv32ui/simv_rv32ui      -rdynamic  -Wl,-rpath='$ORIGIN'/simv_rv32ui.daidir \
+-Wl,-rpath=./simv_rv32ui.daidir -Wl,-rpath=/home/jjt/install/synopsys/vcs/vcs/T-2022.06/linux64/lib \
+-L/home/jjt/install/synopsys/vcs/vcs/T-2022.06/linux64/lib  -Wl,-rpath-link=./  /usr/lib64/libnuma.so.1 \
+_11246_archive_1.so _prev_archive_1.so _cuarc0.so  SIM_l.o      rmapats_mop.o rmapats.o \
+rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o           -lvirsim -lerrorinf -lsnpsmalloc \
+-lvfs    -lvcsnew -lsimprofile -luclinative /home/jjt/install/synopsys/vcs/vcs/T-2022.06/linux64/lib/vcs_tls.o \
+-Wl,-whole-archive  -lvcsucli    -Wl,-no-whole-archive          /home/jjt/install/synopsys/vcs/vcs/T-2022.06/linux64/lib/vcs_save_restore_new.o \
+-ldl  -lc -lm -lpthread -ldl 
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/tmp/competition_vcs_rv32ui/simv_rv32ui up to date
+CPU time: 1.248 seconds to compile + .429 seconds to elab + .230 seconds to link

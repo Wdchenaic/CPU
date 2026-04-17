@@ -1,0 +1,121 @@
+# VCS 仿真生成文件
+sim/vcs/build/
+sim/vcs/csrc/
+sim/vcs/logs/
+sim/vcs/coverage/
+sim/vcs/*.log
+sim/vcs/*.fsdb
+sim/vcs/*.vpd
+sim/vcs/novas.*
+sim/vcs/verdiLog/
+sim/vcs/ucli.key
+sim/vcs/sim/          # VCS自动生成的嵌套目录
+
+# Verdi 波形文件
+*.fsdb
+*.fsdb+
+*.vpd
+novas.*
+verdiLog/
+
+# VCS 编译文件
+*.daidir/
+*.simv
+*.simv.daidir/
+csrc/
+simv
+simv.daidir/
+ucli.key
+
+# 覆盖率文件
+*.vdb/
+urgReport/
+*.log
+
+# 临时文件
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# Vendor synthesis/export artifacts
+_vendor/*.mr
+_vendor/*-verilog.pvl
+_vendor/*-verilog.syn
+_vendor/alib-52/
+_vendor/default.svf
+_vendor/tiny-tpu-200m/
+_vendor/tiny-tpu-instruction/
+
+# tiny-tpu local backup/debug artifacts
+_vendor/tiny-tpu/**/*.bak
+_vendor/tiny-tpu/**/*.bak_*
+_vendor/tiny-tpu/compiler/out/*.bak_*
+_vendor/tiny-tpu/compiler/__pycache__/
+_vendor/tiny-tpu/sim_build_vcs/
+_vendor/tiny-tpu/vfastLog/
+_vendor/tiny-tpu/waveforms/*.fst
+_vendor/tiny-tpu/waveforms/vcd2fsdbLog/
+_vendor/tiny-tpu/*_test.pdf
+_vendor/tiny-tpu/*_test.png
+
+# Local backup files
+*.bak
+*.bak_*
+.gitignore.bak_*
+
+# Root synthesis/generated artifacts
+sim/waveforms/
+syn/*.mr
+syn/*-verilog.pvl
+syn/*-verilog.syn
+syn/default.svf
+syn/alib-52/
+syn/logs/
+syn/outputs/
+syn/reports/
+sim/vcs/vc_hdrs.h
+_vendor/tiny-tpu_timing_opt_20260328/
+_vendor/tiny-tpu/debug/
+
+
+# CPU competition project local artifacts
+repos/
+work/600_competition_5stage/tools/
+work/600_competition_5stage/fpga/panda_soc_eva/sim_build*/
+work/600_competition_5stage/fpga/panda_soc_eva/**/AN.DB/
+work/600_competition_5stage/fpga/panda_soc_eva/**/csrc/
+work/600_competition_5stage/fpga/vivado_prj/runs/
+work/600_competition_5stage/fpga/vivado_prj/*.jou
+work/600_competition_5stage/fpga/vivado_prj/*.log
+*.dcp
+*.bit
+*.ltx
+*.rpt
+*.o
+*.elf
+*.bin
+*.map
+!work/600_competition_5stage/doc/vcs_out/*.log
+*.dump
+*.hex
+*.d
+work/600_competition_5stage/software/eclipse_example/**/Debug/
+work/600_competition_5stage/fpga/panda_soc_eva/tb/sim_build*/
+work/600_competition_5stage/tb/tb_panda_risc_v/inst_test/rv32ui-p-*
+work/600_competition_5stage/tb/tb_panda_risc_v/inst_test/rv32um-p-*
+!work/600_competition_5stage/tb/tb_panda_risc_v/inst_test/*.txt
+!work/600_competition_5stage/tb/tb_panda_risc_v/inst_test/*.verilog
+work/600_competition_5stage/software/test/breath_tpu_soc_demo/breath_tpu_soc_demo
+work/600_competition_5stage/software/test/illegal_exception/illegal_exception
+work/600_competition_5stage/software/test/illegal_exception/illegal_exception_tb0
+work/600_competition_5stage/software/test/illegal_exception_asm/illegal_exception_asm
+work/600_competition_5stage/software/test/load_misalign_exception/load_misalign_exception
+work/600_competition_5stage/software/test/load_misalign_exception/load_misalign_exception_tb0
+work/600_competition_5stage/software/test/load_misalign_exception_asm/load_misalign_exception_asm
+work/600_competition_5stage/doc/my project context.txt

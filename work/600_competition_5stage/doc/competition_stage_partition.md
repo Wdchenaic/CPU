@@ -1,121 +1,122 @@
-# Competition Stage Partition Plan
+# Five-Stage Pipeline Quick Start
 
-## Current 600 Structure
+本文只说明当前 `work/600_competition_5stage` 的五级流水线主线，以及它如何从原 `600_panda_risc_v` 的三个宏功能块改出来。
 
-The current `600_panda_risc_v` organization is functionally close to three macro stages:
+## Current Status
 
-- `IFU`
-- `DCD / Dispatch`
-- `EXU`
+当前 RTL 已经具备可见的 `IF / ID / EX / MEM / WB` 边界：
 
-Observed from the current top-level wiring:
+| 边界 | RTL 文件 | 所在位置 |
+| --- | --- | --- |
+| `IF -> ID` | `rtl/ifu/panda_risc_v_if_id_pipe.v` | `rtl/panda_risc_v.v` |
+| `ID -> EX` | `rtl/decoder_dispatcher/panda_risc_v_id_ex_pipe.v` | `rtl/panda_risc_v.v` |
+| `EX -> MEM` | `rtl/exu/panda_risc_v_ex_mem_pipe.v` | `rtl/exu/panda_risc_v_exu.v` |
+| `MEM/EX completion -> WB` | `rtl/exu/panda_risc_v_wb_pipe.v` | `rtl/exu/panda_risc_v_exu.v` |
 
-- `panda_risc_v_ifu` outputs fetched instruction payload plus predecode metadata
-- `panda_risc_v_dcd_dsptc` reads the register file, decodes, and directly dispatches requests to multiple execution units
-- `panda_risc_v_exu` contains ALU / LSU / CSR / MUL / DIV / commit-side behavior
+这意味着当前项目不再按原 README 的三个宏阶段来介绍，而是按比赛要求的五级流水线来介绍和答辩。
 
-This means the first real refactor target is not the whole SoC shell.
-It is the interface style between decode/dispatch and execution.
+## Original 600 Macro Blocks
 
-## Target 5-Stage Split
+原 `600_panda_risc_v` 的组织方式功能上更接近三个大块：
 
-The competition core should be reshaped into:
+- `panda_risc_v_ifu`：取指、预译码、PC 更新、分支预测基础
+- `panda_risc_v_dcd_dsptc`：译码、读寄存器、相关性检查、直接生成多个执行单元请求
+- `panda_risc_v_exu`：ALU、LSU、CSR、MUL/DIV、异常、提交、写回混在一个后端大模块中
 
-- `IF`
-- `ID`
-- `EX`
-- `MEM`
-- `WB`
+这种结构可以运行，但对比赛文档和答辩不够清楚，因为 MEM 和 WB 的边界不明显，译码到执行之间也缺少独立的流水级说明。
+
+## Current Five Stages
 
 ### IF
 
-Responsibilities:
+职责：
 
-- PC selection
-- fetch request generation
-- predictor lookup
-- small fetch / prefetch buffer
-- branch redirect acceptance
+- PC 选择
+- 取指请求
+- 预译码
+- 静态分支预测基础
+- 接收 flush/redirect
 
-Keep from current 600 IFU:
+对应核心文件：
 
-- instruction bus control path
-- predecode support where it is still useful
-- PC update foundation
-
-Move out of IF emphasis:
-
-- anything that makes the IFU too tightly dependent on later execution bookkeeping
+- `rtl/ifu/panda_risc_v_ifu.v`
+- `rtl/ifu/panda_risc_v_pc_gen.v`
+- `rtl/ifu/panda_risc_v_ibus_ctrler.v`
+- `rtl/ifu/panda_risc_v_pre_decoder.v`
 
 ### ID
 
-Responsibilities:
+职责：
 
-- full decode
-- register file read
-- immediate generation
-- hazard detection
-- bypass selection logic input generation
-- formation of a single decoded micro-op payload
+- 完整译码
+- 通用寄存器堆读
+- RAW/WAW 相关性检查
+- 形成 ALU/LSU/CSR/MUL/DIV 执行请求
 
-Keep from current `dcd_dsptc`:
+对应核心文件：
 
-- decoder logic
-- register-file read path
-- basic hazard-related awareness
-
-Change fundamentally:
-
-- stop directly dispatching separate requests to ALU / LSU / CSR / MUL / DIV from ID
-- replace that direct fanout with one main `ID/EX` payload
+- `rtl/decoder_dispatcher/panda_risc_v_dcd_dsptc.v`
+- `rtl/decoder_dispatcher/panda_risc_v_decoder.v`
+- `rtl/decoder_dispatcher/panda_risc_v_reg_file_rd.v`
+- `rtl/decoder_dispatcher/panda_risc_v_data_dpc_monitor.v`
 
 ### EX
 
-Responsibilities:
+职责：
 
-- ALU execute
-- branch compare and redirect generation
-- effective address generation
-- multiply / divide start or progress control
-- CSR operation preparation
+- ALU 执行
+- CSR 原子读写执行
+- 分支确认和 flush 生成
+- load/store 地址生成
+- 乘除法请求发起
 
-Main rule:
+对应核心文件：
 
-- EX should consume one decoded operation stream
-- EX decides whether the instruction completes in EX or flows into MEM / WB handling
+- `rtl/exu/panda_risc_v_exu.v`
+- `rtl/exu/panda_risc_v_alu.v`
+- `rtl/exu/panda_risc_v_csr_rw.v`
+- `rtl/exu/panda_risc_v_multiplier.v`
+- `rtl/exu/panda_risc_v_divider.v`
 
 ### MEM
 
-Responsibilities:
+职责：
 
-- load / store sequencing
-- load data formatting
-- simple store buffering if retained
-- memory exception completion
+- LSU 请求排队和发起
+- load/store 数据访问
+- load 数据返回
+- 访存异常生成
 
-Main rule:
+对应核心文件：
 
-- keep LSU in-order and competition-friendly
-- do not import 601-style heavy buffering structures
+- `rtl/exu/panda_risc_v_ex_mem_pipe.v`
+- `rtl/exu/panda_risc_v_lsu.v`
 
 ### WB
 
-Responsibilities:
+职责：
 
-- register writeback
-- CSR writeback
-- precise retirement point
-- exception / interrupt finalization point
+- 汇合 ALU/CSR/LSU/MUL/DIV 写回源
+- 写通用寄存器堆
+- 退休/提交
+- 异常和调试相关完成路径
 
-Main rule:
+对应核心文件：
 
-- create a single visible architectural completion stage for report clarity
+- `rtl/exu/panda_risc_v_wb_pipe.v`
+- `rtl/exu/panda_risc_v_wbk.v`
+- `rtl/exu/panda_risc_v_commit.v`
+- `rtl/exu/panda_risc_v_reg_file.v`
 
-## First Interface Cuts
+## What Changed From The Original Structure
 
-### Cut 1: IFU output becomes explicit IF/ID payload
+### 1. IFU output became an explicit `IF/ID` payload
 
-Current output group:
+原 IFU 直接把取指结果送给译码/派遣。现在取指结果先进入：
+
+- `panda_risc_v_if_id_pipe`
+
+这个边界锁存：
 
 - `m_if_res_data`
 - `m_if_res_msg`
@@ -123,123 +124,75 @@ Current output group:
 - `m_if_res_is_first_inst_after_rst`
 - `m_if_res_valid/ready`
 
-Action:
+这样 IF 和 ID 在文档、波形、RTL 上都有清晰分界。
 
-- preserve these semantics initially
-- reinterpret them as the first visible `IF/ID` boundary
-- keep this as the least risky first step
+### 2. Decode/dispatch output became an explicit `ID/EX` payload
 
-### Cut 2: Replace direct multi-unit dispatch with one decode payload
+原 `dcd_dsptc` 会直接向 ALU、LSU、CSR、MUL、DIV 发请求。现在这些请求先经过：
 
-Current `dcd_dsptc` emits many parallel request channels:
+- `panda_risc_v_id_ex_pipe`
 
-- ALU request
-- LSU request
-- CSR request
-- MUL request
-- DIV request
+这个边界锁存各执行单元请求，并把译码级和执行级拆开。当前仍保留原有多执行单元请求形式，目的是降低一次性重构风险；但从流水线展示角度，ID 到 EX 已经有明确寄存器边界。
 
-Action:
+### 3. LSU request path became the visible `EX/MEM` boundary
 
-- define a unified decoded instruction payload at the `ID/EX` boundary
-- move detailed unit selection downstream
+原 EXU 内部直接处理 LSU 请求。现在 load/store 地址在 EX 形成后，先进入：
 
-Why this matters:
+- `panda_risc_v_ex_mem_pipe`
 
-- it is the cleanest way to turn the current 3-block structure into a reportable 5-stage pipeline
-- it reduces top-level wiring explosion
-- it creates a clean place to insert bypass / interlock / predictor recovery control
+然后再送入：
 
-### Cut 3: Split EXU into EX-side control and MEM/WB-side completion
+- `panda_risc_v_lsu`
 
-Current `panda_risc_v_exu` is too broad.
-It mixes:
+这使 MEM 级入口可见。尤其是 `fence_i`、store/load 顺序和访存异常分析时，可以明确区分“请求还在 EX/MEM 前后”还是“已经进入 LSU”。
 
-- ALU execution
-- LSU interaction
-- CSR handling
-- multiply/divide execution
-- retirement-side effects
-- flush generation
-- debug/trap handling
+### 4. Completion sources became the visible `MEM/WB` boundary
 
-Action:
+原 EXU 内部多个完成源直接靠写回逻辑仲裁。现在 ALU/CSR、LSU、MUL、DIV 等完成源先进入：
 
-- first keep the legacy submodules internally if needed
-- but create visible stage boundaries above them:
-  - execute-side decision logic
-  - memory completion path
-  - writeback / commit point
+- `panda_risc_v_wb_pipe`
 
-## Priority Files For The First RTL Cut
+再进入：
 
-Primary files:
+- `panda_risc_v_wbk`
+- `panda_risc_v_commit`
 
-- `rtl/panda_risc_v.v`
-- `rtl/ifu/panda_risc_v_ifu.v`
-- `rtl/decoder_dispatcher/panda_risc_v_dcd_dsptc.v`
-- `rtl/exu/panda_risc_v_exu.v`
+这使 WB 入口和退休入口在 RTL 中可见。
 
-Secondary files likely to follow:
+### 5. Barrier ordering was fixed around the new MEM boundary
 
-- `rtl/exu/panda_risc_v_lsu.v`
-- `rtl/decoder_dispatcher/panda_risc_v_reg_file_rd.v`
-- core-facing testbenches under `tb/tb_panda_risc_v*`
+加入 `EX/MEM` 边界后，仅看 LSU 本体 idle 不够。旧 store 可能还没进入 LSU，就被后面的屏障指令越过。
 
-## First Implementation Sequence
+当前 `lsu_idle` 语义已经加强，只有同时满足以下条件才认为内存路径空闲：
 
-1. keep the SoC shell unchanged
-2. preserve the current fetch result bundle as the temporary `IF/ID` register payload
-3. redefine decode output as a single `ID/EX` operation payload
-4. split EXU behavior into visible `EX -> MEM -> WB` control boundaries
-5. only after that, tighten bypass and branch-predict recovery details
+- EX 当前没有新的 LSU 请求
+- `panda_risc_v_ex_mem_pipe` 内没有缓存 LSU 请求
+- `panda_risc_v_lsu` 本体空闲
 
-## Engineering Constraint
+这个改动保证 `fence_i` 等屏障不会越过尚未真正进入 LSU 的旧访存请求。
 
-If a refactor step does not make the stage boundaries more visible or make the judged build smaller / safer, it should not be part of the first implementation cut.
+## How To Read The RTL Quickly
 
+建议按这个顺序：
 
-## Implemented So Far
+1. `rtl/panda_risc_v.v`：看 `panda_risc_v_if_id_pipe_u` 和 `panda_risc_v_id_ex_pipe_u`
+2. `rtl/decoder_dispatcher/panda_risc_v_id_ex_pipe.v`：看 ID 到 EX 锁存了哪些请求
+3. `rtl/exu/panda_risc_v_exu.v`：搜索 `panda_risc_v_ex_mem_pipe_u` 和 `panda_risc_v_wb_pipe_u`
+4. `rtl/exu/panda_risc_v_lsu.v`：看 MEM 级实际访存
+5. `rtl/exu/panda_risc_v_wbk.v`：看 WB 级写回仲裁
+6. `rtl/exu/panda_risc_v_commit.v`：看退休、异常和 flush 相关完成路径
 
-Current explicit stage cuts already added in RTL:
+## Verification Baseline
 
-- `IF -> ID` now passes through `panda_risc_v_if_id_pipe`
-- `ID -> EX` now passes through `panda_risc_v_id_ex_pipe`
+当前记录的 VCS 基线：
 
-This means the next architectural cleanup target should move deeper into the core:
+- 文档：`doc/rv32ui_regression_20260405.md`
+- 脚本：`tb/tb_panda_risc_v/test_isa_vcs.py`
+- 结果：`rv32ui-p-*` 共 `39 passed, 0 failed`
 
-- make the EXU boundary more visibly split toward `EX / MEM / WB`
-- simplify LSU completion and writeback visibility
+推荐命令：
 
-
-### Newly Landed Boundary Note
-
-After the earlier `IF -> ID` and `ID -> EX` cuts, the next visible cleanup has now also landed inside EXU:
-
-- `completion sources -> WB` now passes through `panda_risc_v_wb_pipe`
-- the writeback / retirement entrance is therefore explicitly registered in RTL
-
-This means the remaining major ambiguity is no longer the `WB` entrance itself, but the still-mixed `EX / MEM` responsibility around LSU request / response handling.
-
-
-### Newly Landed Boundary Note 2
-
-The LSU request side is now also explicitly staged:
-
-- `EX -> MEM` on the LSU request path now passes through `panda_risc_v_ex_mem_pipe`
-- together with `completion sources -> WB` through `panda_risc_v_wb_pipe`, the back half of the pipeline now has a visible memory-entry boundary and a visible writeback-entry boundary
-
-The main remaining cleanup target is no longer whether a MEM boundary exists at all, but how cleanly LSU completion, exception visibility, and later bypass / interlock behavior are expressed around that boundary.
-
-
-### Newly Landed Boundary Note 3
-
-The EXU-exported `lsu_idle` semantic is now intentionally stronger than the raw LSU-core idle signal.
-
-For barrier instructions, the system now treats the memory path as idle only when all three regions are empty:
-
-- no older LSU request is still in current `EX`
-- no older LSU request is buffered in `panda_risc_v_ex_mem_pipe`
-- `panda_risc_v_lsu` itself is idle
-
-This matters because after the explicit `EX/MEM` cut, using only the raw LSU-core idle signal allowed `fence_i` to overtake older stores that had not yet entered LSU. The new definition restores correct ordering while preserving the explicit stage boundary.
+```sh
+cd work/600_competition_5stage/tb/tb_panda_risc_v
+python3 test_isa_vcs.py --pattern 'rv32ui-p-*.txt' --build-dir /tmp/competition_vcs_rv32ui
+```

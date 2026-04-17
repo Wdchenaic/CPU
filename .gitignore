@@ -119,3 +119,18 @@ work/600_competition_5stage/software/test/load_misalign_exception/load_misalign_
 work/600_competition_5stage/software/test/load_misalign_exception/load_misalign_exception_tb0
 work/600_competition_5stage/software/test/load_misalign_exception_asm/load_misalign_exception_asm
 work/600_competition_5stage/doc/my project context.txt
+
+# Current five-stage CPU documentation cleanup
+/README.md.bak
+/docs/analysis/
+/官方赛题/
+/第三章-*.pdf
+/赛题要求.txt
+/work/600_competition_5stage/doc/vcs_out/
+/work/600_competition_5stage/doc/simv_*.daidir/
+/work/600_competition_5stage/doc/my project context.txt
+/work/600_competition_5stage/fpga/**/.Xil/
+/work/600_competition_5stage/fpga/**/*.runs/
+/work/600_competition_5stage/fpga/**/*.cache/
+/work/600_competition_5stage/fpga/**/*.hw/
+/work/600_competition_5stage/fpga/**/*.ip_user_files/
